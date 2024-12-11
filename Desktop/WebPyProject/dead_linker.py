@@ -15,14 +15,14 @@ def get_all_links(url):
         raise Exception(f"Error fetching the URL: {e}")
 
 def check_link_statuses(links):
-    """
-    Sprawdza status kodu HTTP.
-    """
+
+    #sprawdzenie statusu linka
+
     statuses = {}
     for link in links:
         try:
             response = requests.head(link, allow_redirects=True, timeout=5)
             statuses[link] = response.status_code
         except requests.exceptions.RequestException:
-            statuses[link] = "Błąd"
+            statuses[link] = "Nieznany błąd."
     return statuses

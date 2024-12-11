@@ -1,32 +1,55 @@
 import tkinter as tk
 from tkinter import messagebox
+from tkinter import ttk
+from threading import Thread
 from dead_linker import get_all_links, check_link_statuses
 
 def analyze_links():
     url = url_entry.get()
     if not url:
-        messagebox.showwarning("Input Error", "Please enter a URL.")
+        messagebox.showwarning("Niepoprawny link", "Podaj poprawny URL!")
         return
 
-    # Pobranie linku i weryfikacja statusu
-    try:
-        links = get_all_links(url)
-        if not links:
-            messagebox.showinfo("Nie znaleziono linków", "Brak linków pod podanym URL!")
-            return
+    #komunikat o postępie wryfikacji
+    status_label.config(text="Weryfikacja w toku...")
+    check_button.config(state="disabled")
+    progress_bar.start()
+    progress_bar.pack(pady=12)
 
-       #Sprawdzenie statusów pod podanym linkaczem
-        results = check_link_statuses(links)
+    def progressbar():
+        try:
+            links = get_all_links(url)
+            if not links:
+                root.after(0, lambda: messagebox.showinfo("Linków nie znaleziono", "Pod podanym URL nie ma linków do analizy"))
+                root.after(0, lambda: status_label.config(text="Linków nie znaleziono"))
+                return
+
+            results = check_link_statuses(links)
+
+            #przekazanie wynikow do UI
+            root.after(0, show_results, results)
+        except Exception as e:
+            root.after(0, lambda: messagebox.showerror("Error", str(e)))
+        finally:
+            root.after(0, lambda: progress_bar.stop())  #zatrzymanie Progressbara
+            root.after(0, lambda: progress_bar.pack_forget())  #ukrycie progressbara
+            root.after(0, lambda: status_label.config(text="Proces zakończony."))
+            root.after(0, lambda: check_button.config(state="normal"))
+
+
+    analysis_thread = Thread(target=progressbar)
+    analysis_thread.start()
+
+    def show_results(results):
+        # Wyświetlenie wyników
         result_window = tk.Toplevel(root)
-        result_window.title("Dead Link Checker")
+        result_window.title("Wyniki")
         result_text = tk.Text(result_window, wrap="word")
         result_text.pack(expand=1, fill="both")
 
-        # Wyświetlanie wyników na stronie - PAMIETAJ ZEBY USPRAWNIC I WYSWIETLAC TYLKO TE Z BLEDAMI
         for link, status in results.items():
             result_text.insert("end", f"{link}: {status}\n")
-    except Exception as e:
-        messagebox.showerror("Nieznany błąd", str(e))
+
 
 # Zmiany w GUI
 root = tk.Tk()
@@ -40,5 +63,13 @@ url_entry.pack(pady=10)
 
 check_button = tk.Button(root, text="Sprawdź linki na stronie!", command=analyze_links)
 check_button.pack(pady=10)
+
+status_label = tk.Label(root, text="", fg="red")
+status_label.pack(pady=10)
+
+# Dodanie Progressbar
+progress_bar = ttk.Progressbar(root, mode="indeterminate")
+progress_bar.pack(pady=10)
+progress_bar.grid_remove()  # Ukrycie Progressbar na początku
 
 root.mainloop()
