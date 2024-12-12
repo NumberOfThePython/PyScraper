@@ -8,7 +8,7 @@ def get_all_links(url):
         response.raise_for_status()  # Wyjątek jeśli strona odpowie błędem
         soup = BeautifulSoup(response.text, "html.parser")
         links = [a.get("href") for a in soup.find_all("a", href=True)]
-        # Filtrowanie linków: upewnij się, że linki są absolutne
+        #dodawane linki muszę być pełne w formacie http
         links = [link if link.startswith("http") else f"{url.rstrip('/')}/{link.lstrip('/')}" for link in links]
         return links
     except requests.exceptions.RequestException as e:
