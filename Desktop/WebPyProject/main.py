@@ -24,7 +24,7 @@ def analyze_links():
                 root.after(0, lambda: status_label.config(text="Linków nie znaleziono"))
                 return
 
-            results = check_link_statuses(links)
+            results = check_link_status(links)
 
             #przekazanie wynikow do UI
             root.after(0, show_results, results)
@@ -70,6 +70,6 @@ status_label.pack(pady=10)
 # Dodanie Progressbar
 progress_bar = ttk.Progressbar(root, mode="indeterminate")
 progress_bar.pack(pady=10)
-progress_bar.grid_remove()  # Ukrycie Progressbar na początku
+progress_bar.grid_remove()
 
 root.mainloop()
