@@ -1,6 +1,10 @@
 import requests
 from bs4 import BeautifulSoup
 
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36"
+}
+
 def get_all_links(url):
    #Apka pobiera Hrefy ze strony
    try:
@@ -22,7 +26,7 @@ def check_link_statuses(links):
     statuses = {}
     for link in links:
         try:
-            response = requests.get(link, allow_redirects=True, timeout=5)
+            response = requests.get(link, allow_redirects=True, timeout=10, headers=HEADERS)
             if response.status_code != 200:
                 statuses[link] = response.status_code
         except requests.exceptions.RequestException as e:
