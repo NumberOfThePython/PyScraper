@@ -10,7 +10,6 @@ def analyze_links():
         messagebox.showwarning("Niepoprawny link", "Podaj poprawny URL!")
         return
 
-    #komunikat o postępie wryfikacji
     status_label.config(text="Weryfikacja w toku...")
     check_button.config(state="disabled")
     progress_bar.start()
@@ -24,32 +23,38 @@ def analyze_links():
                 root.after(0, lambda: status_label.config(text="Linków nie znaleziono"))
                 return
 
-            results = check_link_status(links)
+            results = check_link_statuses(links)
 
-            #przekazanie wynikow do UI
+            # Logujemy wyniki do konsoli
+            print(f"Wyniki analizy: {results}")
+
+            if not results:
+                root.after(0, lambda: messagebox.showinfo("Brak błędnych linków", "Wszystkie linki mają status 200."))
+                root.after(0, lambda: status_label.config(text="Wszystkie linki poprawne."))
+                return
+
+            # Przekazanie wyników do UI
             root.after(0, show_results, results)
         except Exception as e:
             root.after(0, lambda: messagebox.showerror("Error", str(e)))
         finally:
-            root.after(0, lambda: progress_bar.stop())  #zatrzymanie Progressbara
-            root.after(0, lambda: progress_bar.pack_forget())  #ukrycie progressbara
+            root.after(0, lambda: progress_bar.stop())
+            root.after(0, lambda: progress_bar.pack_forget())
             root.after(0, lambda: status_label.config(text="Proces zakończony."))
             root.after(0, lambda: check_button.config(state="normal"))
-
 
     analysis_thread = Thread(target=progressbar)
     analysis_thread.start()
 
-    def show_results(results):
-        # Wyświetlenie wyników
-        result_window = tk.Toplevel(root)
-        result_window.title("Wyniki")
-        result_text = tk.Text(result_window, wrap="word")
-        result_text.pack(expand=1, fill="both")
+def show_results(results):
+    # Wyświetlenie wyników
+    result_window = tk.Toplevel(root)
+    result_window.title("Wyniki")
+    result_text = tk.Text(result_window, wrap="word")
+    result_text.pack(expand=1, fill="both")
 
-        for link, status in results.items():
-            result_text.insert("end", f"{link}: {status}\n")
-
+    for link, status in results.items():
+        result_text.insert("end", f"{link}: {status}\n")
 
 # Zmiany w GUI
 root = tk.Tk()
@@ -70,6 +75,6 @@ status_label.pack(pady=10)
 # Dodanie Progressbar
 progress_bar = ttk.Progressbar(root, mode="indeterminate")
 progress_bar.pack(pady=10)
-progress_bar.grid_remove()
+progress_bar.grid_remove()  # Ukrycie Progressbar na początku
 
 root.mainloop()
